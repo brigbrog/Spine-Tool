@@ -10,10 +10,12 @@ import sys
 import numpy as np
 
 
+from sklearn.cluster import DBSCAN
+
 class SpineDensity:
 
     @staticmethod
-    def get_nn(item, arr):
+    def get_nn_1D(item, arr):
         '''
          Get Nearest Neighbor
             usage:
@@ -24,24 +26,55 @@ class SpineDensity:
         abs_dist_arr = np.abs(dist_arr[dist_arr != 0.0])
         min_abs_idx = np.argmin(abs_dist_arr)
 
-        return min_abs_idx, abs_dist_arr[min_abs_idx]
+        # return min_abs_idx, abs_dist_arr[min_abs_idx]
+        return min_abs_idx, abs_dist_arr
 
     @staticmethod
-    def avg_nearest_neighbor(arr):
+    def avg_nn_1D(arr):
         '''
-        Average Nearest Neighbors in <arr>
+        Average Nearest Neighbors for items in <arr>
         '''
         sum_nn_dist = []
         for item in arr:
-            _, nn_dist = SpineDensity.get_nn(item, arr)
+            nn_idx, nn_dist_arr = SpineDensity.get_nn_1D(item, arr)
+            nn_dist = nn_dist_arr[nn_idx]
             sum_nn_dist.append(nn_dist)
 
         return sum(sum_nn_dist) / len(sum_nn_dist)
 
+    @staticmethod
+    def get_nn_nD(item, arr):
+        '''
+        Get Nearest Neighbor in N Dimensions
+        '''
+        pass
 
     @staticmethod
-    def db_scan(eps, min_pts):
+    def avg_nn_nD(arr):
+        '''
+        Average Nearest Neighbors for items in <arr> (N Dimensions)
+        '''
         pass
+    
+
+    @staticmethod
+    def dbscan(arr, eps, min_pts):
+        '''
+        Cluster using Density-Based Spatial Clustering of Applications with Noise
+        (DBSCAN)
+            usage:
+             eps = (epsilon) The maximum distance between two objects to be considered neighbors.
+             min_pts = (minimum points) The minimum number of points within eps to determine "core point" (cluster)
+        '''
+        copy = arr.copy()
+        if copy.ndim == 1:
+            copy = copy.reshape(-1, 1)
+
+        db = DBSCAN(eps=eps, min_samples=min_pts)
+        db.fit(copy)
+
+        return db.labels_
+
 
     @staticmethod
     def kernel_density_estimate():
