@@ -6,7 +6,7 @@
 
 # KS test maybe somewhere else
 
-from kernel_generation import KernelGen
+#from kernel_generation import KernelGen
 
 import sys
 import numpy as np
@@ -48,7 +48,7 @@ class SpineDensity:
             nn_dist = nn_dist_arr[nn_idx]
             sum_nn_dist.append(nn_dist)
 
-        return sum(sum_nn_dist) / len(sum_nn_dist)
+        return sum(sum_nn_dist) / len(sum_nn_dist), sum_nn_dist
 
     @staticmethod
     def get_nn_nD(item, arr):
@@ -85,21 +85,19 @@ class SpineDensity:
 
 
     @staticmethod
-    def gaussian_kde_1D(arr, bandwith, eval_buff=2, eval_size='same'):
+    def gaussian_kde_1D(arr, bandwidth='scott', eval_buff=2, eval_sf=1.0):
         '''
         Gaussian Kernel Density Estimate (KDE)
             (convolves input array with gaussian kernel)
 
-            if eval_size = 'same', then the kernel is estimated on a vector with the same shape
+            if eval_sf (evalutaion size factor) = 'same', then the kernel is estimated on a vector with the same shape
                 as the input array. Otherwise the estimate size is controlled by int eval_size
         '''
-        if eval_size == 'same':
-            #eval_size = arr.shape[0]
-            eval_size = np.max(arr)
-        gauss_kde = gaussian_kde(arr)
+        eval_size = round(eval_sf * np.max(arr))
+        gauss_kde = gaussian_kde(arr, bw_method=bandwidth)
         eval_grid = np.linspace(np.min(arr) - eval_buff, np.max(arr) + eval_buff, eval_size)
 
-        return gauss_kde(eval_grid)
+        return eval_grid, gauss_kde(eval_grid)
 
 
     # ADD support for kernel customization
@@ -117,7 +115,7 @@ class SpineDensity:
 
 
     @staticmethod
-    def vmr(arr);
+    def vmr(arr):
         '''
         Variance to mean ratio
             VMR = 1 -> consistent with poisson
@@ -147,12 +145,14 @@ class SpineDensity:
 
         counts_vmr = SpineDensity.vmr(counts)
 
-        return, counts_vmr, counts, bin_edges
+        return counts_vmr, counts, bin_edges
 
 
     @staticmethod
     def ripley_kfunc_1D(arr, L, r):
         '''
+        L : Length of domain (section-length)
+        r : radius
         '''
 
         n = arr.shape[0]
@@ -183,7 +183,7 @@ class SpineDensity:
         return (L * k_sum) / (n * (n - 1))
 
 
-    @staticmethods
+    @staticmethod
     def lin_1d_lfunc():
         pass
 
