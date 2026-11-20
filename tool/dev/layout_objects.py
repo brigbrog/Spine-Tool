@@ -71,10 +71,11 @@ class ImageWindow(Window):
     def _initUI(self):
         '''
         '''
-        self.graphicsView = QGraphicsView()
-        self.setCentralWidget(self.graphicsView)
-        self._createImageToolBar()
-        self._createStatusBar(message="status")
+        pass
+        # self.graphicsView = QGraphicsView()
+        # self.setCentralWidget(self.graphicsView)
+        # self._createImageToolBar()
+        # self._createStatusBar(message="status")
 
     def _createImageToolBar(self):
         '''

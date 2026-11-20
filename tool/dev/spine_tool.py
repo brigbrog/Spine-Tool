@@ -80,57 +80,8 @@ class SpineTool(ImageWindow):
 
 		# create menu bar for file i/o
 
-
-# Features
-	# def _createImageToolBar(self):
-	# 	# should include conversion widgets and convert button ONLY
-
-	# 	functions = QToolBar()
-
-	# 	# ToolBar Buttons
-	# 	load_button = self._getLoadImageButton()
-	# 	convert_button = self._getConvertImageButton() 
-	# 	export_button = self._getExportImageButton()
-		
-	# 	# functions.addAction("CONVERT", self._convertImage)
-
-	# 	# Add Widgets to ToolBar
-	# 	functions.addWidget(load_button)
-	# 	functions.addWidget(convert_button)
-	# 	functions.addWidget(export_button)
-	# 	self.addToolBar(Qt.ToolBarArea.LeftToolBarArea, functions)
-
-
-	# def _getLoadImageButton(self):
-
-	# 	# will be moved to menu bar
-
-	# 	load_button = QPushButton("Load")
-	# 	load_button.clicked.connect(self._loadImage)
-
-	# 	return load_button
-
-
-	# def _getConvertImageButton(self):
-
-	# 	convert_button = QPushButton("Convert")
-	# 	convert_button.clicked.connect(self._convertImage)
-
-	# 	return convert_button
-
-	# def _getExportImageButton(self):
-
-	# 	# will be moved to menu bar
-
-	# 	export_button = QPushButton("Export")
-	# 	export_button.clicked.connect(self._exportImage)
-
-	# 	return export_button
-
-
 # ACTIONS :
 # ------------------------------------------------------------------------------------------------
-
 
 	def _loadImage(self):
 		'''
@@ -175,58 +126,14 @@ class SpineTool(ImageWindow):
 		if not fpath:
 			return
 
-		image_q = self._getImageDataFromViewer()
-		image_pil = self._qImage2Pil(image_q)
+		image_q = self._getGraphicsScene()
+		image_pil = self.dataManager._qImage2Pil(image_q)
 
 		image_pil.save(fpath, "PNG")
 		self.statusBar().showMessage(f"IMAGE SAVED TO {fpath}")
 
 
-	def _convertImage(self):
-		'''
-		Converts the current image in <self.GraphicsView> with the HARD-CODED transformation. After converting the 
-		canvas is reloaded. The original image is not preserved. If canvas is empty, returns None
-
-		Params:
-			None
-		Returns:
-			None
-		
-		'''
-		if not self.scene:
-			self.statusBar().showMessage("VOID SCENE")
-			return None
-		else:
-			image_q = self._getImageDataFromViewer()
-			image_pil = self._qImage2Pil(image_q)
-			image = np.array(image_pil)
-
-			# transform
-			new_image = self._scramble(image)
-
-			# QImage
-			qimage = self._ndarray2QImage(new_image)
-			pix_im = QPixmap(qimage)
-
-			# RELOAD
-			self._reload_canvas(pix_im)
-			self.statusBar().showMessage("SCRAMBLED !!!")
-
-
-
-	def _scramble(self, image):
-		img_hc, img_wc = self._getImageCenter(image)
-		new_image = np.random.uniform(low=0.0, high=255.0, size = image.shape)
-		return new_image
-
-
-	def _getImageCenter(self, arr: np.ndarray):
-		height, width, _ = arr.shape
-		return float(height // 2), float(width // 2)
-
-
-
-	def _getImageDataFromViewer(self):
+	def _getGraphicsScene(self):
 		'''
 		Pulls data from the scene <GraphicsView> and converts it to a QImage
 
@@ -252,74 +159,113 @@ class SpineTool(ImageWindow):
 		return qimage
 
 
-
-
-
-
-	def _qImage2Pil(self, qImage: QImage):
+	def _convertImage(self):
 		'''
-		Converts a <QImage> to a pillow <Image>
+		Converts the current image in <self.GraphicsView> with the HARD-CODED transformation. After converting the 
+		canvas is reloaded. The original image is not preserved. If canvas is empty, returns None
 
 		Params:
-			<QImage> Any
+			None
 		Returns:
-			<Image> pillow image 
+			None
+		
 		'''
-		if qImage is not None:
-			arr = self._qImage2Ndarray(qImage)
-			pilImage = Image.fromarray(arr)
+		if not self.scene:
+			self.statusBar().showMessage("VOID SCENE")
+			return None
+		else:
+			image_q = self._getGraphicsScene()
+			image_pil = self.dataManager._qImage2Pil(image_q)
+			image = np.array(image_pil)
 
-			return pilImage
+			# transform
+			new_image = self.dataManager._scramble(image)
 
-	def _pil2QImage(self, pilImage: Image):
-		'''
-		Converts numpy <ndarray> to PyQt <QImage>
+			# QImage
+			qimage = self.dataManager._ndarray2QImage(new_image)
+			pix_im = QPixmap(qimage)
 
-		Params:
-			<Image> pillow <Image>
-		Returns:
-			<QImage> format (RGBA8888)
-		'''
-		arr = np.asarray(pilImage)
-		qImage = self._ndarray2QImage(arr)
-		return qImage
+			# RELOAD
+			self._reload_canvas(pix_im)
+			self.statusBar().showMessage("SCRAMBLED !!!")
 
-	def _qImage2Ndarray(self, qImage: QImage):
-		'''
-		Converts a <QImage> to a numpy <ndarray>
+# |_ Move all to data manager
 
-		Params:
-			<QImage> Any
-		Returns:
-			<ndarray> numpy array in image format (RGBA8888)
-		'''
-		if qImage is not None:
-			qImage = qImage.convertToFormat(QImage.Format.Format_RGBA8888)
-			width = qImage.width()
-			height = qImage.height()
+	# def _scramble(self, image):
+	# 	img_hc, img_wc = self._getImageCenter(image)
+	# 	new_image = np.random.uniform(low=0.0, high=255.0, size = image.shape)
+	# 	return new_image
 
-			ptr = qImage.bits()
-			ptr.setsize(qImage.sizeInBytes())
-			arr = np.array(ptr).reshape((height, width, 4))
 
-			return arr
+	# def _getImageCenter(self, arr: np.ndarray):
+	# 	height, width, _ = arr.shape
+	# 	return float(height // 2), float(width // 2)
 
-	def _ndarray2QImage(self, image: np.ndarray):
-		'''
-		Converts numpy <ndarray> to PyQt <QImage>
 
-		Params:
-			<ndarray> array in image format (Y, X, RGBA)
-		Returns:
-			<QImage> format (RGBA8888)
-		'''
-		qImage = QImage(image.data, 
-						image.shape[1],
-						image.shape[0],
-						image.strides[0],
-						QImage.Format.Format_RGBA8888)
+	# def _qImage2Pil(self, qImage: QImage):
+	# 	'''
+	# 	Converts a <QImage> to a pillow <Image>
 
-		return qImage
+	# 	Params:
+	# 		<QImage> Any
+	# 	Returns:
+	# 		<Image> pillow image 
+	# 	'''
+	# 	if qImage is not None:
+	# 		arr = self._qImage2Ndarray(qImage)
+	# 		pilImage = Image.fromarray(arr)
+
+	# 		return pilImage
+
+	# def _pil2QImage(self, pilImage: Image):
+	# 	'''
+	# 	Converts numpy <ndarray> to PyQt <QImage>
+
+	# 	Params:
+	# 		<Image> pillow <Image>
+	# 	Returns:
+	# 		<QImage> format (RGBA8888)
+	# 	'''
+	# 	arr = np.asarray(pilImage)
+	# 	qImage = self._ndarray2QImage(arr)
+	# 	return qImage
+
+	# def _qImage2Ndarray(self, qImage: QImage):
+	# 	'''
+	# 	Converts a <QImage> to a numpy <ndarray>
+
+	# 	Params:
+	# 		<QImage> Any
+	# 	Returns:
+	# 		<ndarray> numpy array in image format (RGBA8888)
+	# 	'''
+	# 	if qImage is not None:
+	# 		qImage = qImage.convertToFormat(QImage.Format.Format_RGBA8888)
+	# 		width = qImage.width()
+	# 		height = qImage.height()
+
+	# 		ptr = qImage.bits()
+	# 		ptr.setsize(qImage.sizeInBytes())
+	# 		arr = np.array(ptr).reshape((height, width, 4))
+
+	# 		return arr
+
+	# def _ndarray2QImage(self, image: np.ndarray):
+	# 	'''
+	# 	Converts numpy <ndarray> to PyQt <QImage>
+
+	# 	Params:
+	# 		<ndarray> array in image format (Y, X, RGBA)
+	# 	Returns:
+	# 		<QImage> format (RGBA8888)
+	# 	'''
+	# 	qImage = QImage(image.data, 
+	# 					image.shape[1],
+	# 					image.shape[0],
+	# 					image.strides[0],
+	# 					QImage.Format.Format_RGBA8888)
+
+	# 	return qImage
 
 
 
