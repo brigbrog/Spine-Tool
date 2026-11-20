@@ -20,43 +20,47 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QFileDialog,
     QGraphicsScene,
-    QGraphicsPixmapItem
+    QGraphicsPixmapItem,
+    QLineEdit
     )
 
-# from spine_tool import SpineTool
-# from layout_objects import ImageWindow
 
-# class WindowManager(ImageWindow):
 class WindowManager: 
     # Window Manager for SpineToolApp
     def __init__(self, appManager):
         
         self.appManager = appManager
-        # super().__init__()
         self._initUI()
+
 
     def _initUI(self):
         #
         self.appManager.graphicsView = QGraphicsView()
         self.appManager.setCentralWidget(self.appManager.graphicsView)
-        
-        #self._createImageToolBar()
 
         # create the menu
         menuBar = self.appManager.menuBar()
         menuBar.setNativeMenuBar(False)
         self._buildMenu(menuBar)
 
-        # self._createIOMenu()
-        # self._createAnalysisMenu()
-        
         # create Status bar
         self._createStatusBar()
 
 
 # FEATURES
+
+    def _createStatusBar(self, message = "STATUS"):
+        status = QStatusBar()
+        status.showMessage(message)
+        self.appManager.setStatusBar(status)
+
+
     def _buildMenu(self, menuBar):
-        menu_definitions = [
+        '''
+        Create the menu bar specifications and populate the menu bar
+        '''
+        # specify the menu features 
+        menu_specs = [
             (
                 "&Menu",
                 [
@@ -72,6 +76,12 @@ class WindowManager:
                         "Ctrl+S",
                         "Select a save location and specify a filename for the analysis data."
                     ),
+                    (
+                        "Hide ToolBar",
+                        self._clearToolBar,
+                        "None",
+                        "None"
+                    ),
                     None,  # separator
                     ("&Exit", self.appManager.close, "Ctrl+Q", "Close Spine Tool"), # <- handle this signal for confirmation
                 ],
@@ -79,17 +89,18 @@ class WindowManager:
             (
                 "&Analyze",
                 [
-                    ("Spine Visualizer", self.appManager._placeHolder, None, "Open Spine Visualizer"), # <- change to spine visualizer
-                    ("Nearest Neighbors", self.appManager._placeHolder, None, "Open Nearest Neighbors"), # <- change to nearest neighbors
-                    ("DBSCAN Clusters", self.appManager._placeHolder, None, "Open DBSCAN"), # <- change to clusters DBSCAN
-                    ("Ripley K-Function", self.appManager._placeHolder, None, "Open Ripley K-Function"), # <- change to clusters DBSCAN
-                    ("Kernel Density Estimate", self.appManager._placeHolder, None, "Open KDE"), # <- change to gaussian KDE
+                    ("Spine Visualizer", self._createSpineVisualizer, None, "Open Spine Visualizer"), 
+                    ("Nearest Neighbors", self._createNearestNeighborsToolBar, None, "Open Nearest Neighbors"), 
+                    ("DBSCAN Clusters", self._createDBSCANClustersToolBar, None, "Open DBSCAN"), 
+                    ("Ripley K-Function", self._createRipleyKFunctionToolBar, None, "Open Ripley K-Function"), 
+                    ("Kernel Density Estimate", self._createKenelDensityEstimateToolBar, None, "Open KDE"), 
                     # ("")
                 ],
             ),
         ]
 
-        for menu_title, entries in menu_definitions:
+        # populate the menu based on the above menu specifications
+        for menu_title, entries in menu_specs:
             menu = menuBar.addMenu(menu_title)
             for entry in entries:
                 if entry is None:
@@ -103,98 +114,134 @@ class WindowManager:
                 if statusTip:
                     action.setStatusTip(statusTip)
 
+# TOOL BAR
+
+    def _clearToolBar(self):
+        '''
+        '''
+        for toolbar in self.appManager.findChildren(QToolBar):
+            if self.appManager.toolBarArea(toolbar) == Qt.ToolBarArea.RightToolBarArea:
+                self.appManager.removeToolBar(toolbar)
+                toolbar.deleteLater()
+
+
     def _createSpineVisualizer(self):
-        pass
+        '''
+        '''
+        self._clearToolBar()
+
 
     def _createNearestNeighborsToolBar(self):
-        pass
+        '''
+        '''
+        self._clearToolBar()
+
 
     def _createDBSCANClustersToolBar(self):
-        pass
+        '''
+        '''
+        self._clearToolBar()
+        toolBar = QToolBar()
+        
+        epsilonLabel = QLabel("Epsilon ")
+        epsilonField = QLineEdit()
+        epsilonField.setMaxLength(10)
+        epsilonField.setPlaceholderText("0.5")
+        epsilonField.setStatusTip("Epsilon")
+        epsilonLabel.setBuddy(epsilonField)
+
+        minPTSLabel = QLabel("Min Points ")
+        minPTSField = QLineEdit()
+        minPTSField.setMaxLength(10)
+        minPTSField.setPlaceholderText("2")
+        minPTSField.setStatusTip("Minimum Points")
+        minPTSLabel.setBuddy(minPTSField)
+        
+        # add widgets to the toolbar
+        toolBar.addWidget(epsilonLabel)
+        toolBar.addWidget(epsilonField)
+
+        toolBar.addWidget(minPTSLabel)
+        toolBar.addWidget(minPTSField)
+
+        self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
+
 
     def _createRipleyKFunctionToolBar(self):
-        pass
+        '''
+        '''
+        self._clearToolBar()
+        toolBar = QToolBar()
+
+        radiusLowBoundLabel = QLabel("Radius Low Limit")
+        radiusLowBoundField = QLineEdit()
+        radiusLowBoundField.setMaxLength(10)
+        radiusLowBoundField.setPlaceholderText("0.01")
+        radiusLowBoundField.setStatusTip("Radius lower limit for Ripley K-Function Analysis")
+        radiusLowBoundLabel.setBuddy(radiusLowBoundField)
+
+        radiusHighBoundLabel = QLabel("Radius Upper Limit")
+        radiusHighBoundField = QLineEdit()
+        radiusHighBoundField.setMaxLength(10)
+        radiusHighBoundField.setPlaceholderText("100")
+        radiusHighBoundField.setStatusTip("Radius upper limit for Ripley K-Function Analysis")
+        radiusHighBoundLabel.setBuddy(radiusHighBoundField)
+
+        radiusDensityLabel = QLabel("Radius Array Density")
+        radiusDensityField = QLineEdit()
+        radiusDensityField.setMaxLength(10)
+        radiusDensityField.setPlaceholderText("1000")
+        radiusDensityField.setStatusTip("Radius array density for Ripley K-Function Analysis")
+        radiusDensityLabel.setBuddy(radiusDensityField)
+
+        # add widgets to the toolbar
+        toolBar.addWidget(radiusLowBoundLabel)
+        toolBar.addWidget(radiusLowBoundField)
+
+        toolBar.addWidget(radiusHighBoundLabel)
+        toolBar.addWidget(radiusHighBoundField)
+
+        toolBar.addWidget(radiusDensityLabel)
+        toolBar.addWidget(radiusDensityField)
+
+        self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
+
 
     def _createKenelDensityEstimateToolBar(self):
-        pass
+        '''
+        '''
+        self._clearToolBar()
+        toolBar = QToolBar()
 
-    def _clearToolbar(self):
-        pass
+        bandwidthLabel = QLabel("Bandwidth")
+        bandwidthField = QLineEdit()
+        bandwidthField.setMaxLength(10)
+        bandwidthField.setPlaceholderText("0.1")
+        bandwidthField.setStatusTip("Kernel width for density estimation (percentage)")
+        bandwidthLabel.setBuddy(bandwidthField)
 
+        evalBuffLabel = QLabel("Eval Buffer")
+        evalBuffField = QLineEdit()
+        evalBuffField.setMaxLength(10)
+        evalBuffField.setPlaceholderText("5")
+        evalBuffField.setStatusTip("Evaluation buffer for convolution operation")
+        evalBuffLabel.setBuddy(evalBuffField)
 
+        evalSFLabel = QLabel("Eval Scale Factor")
+        evalSFField = QLineEdit()
+        evalSFField.setMaxLength(10)
+        evalSFField.setPlaceholderText("10.0")
+        evalSFField.setStatusTip("Evaluation grid multiplicative factor")
+        evalSFLabel.setBuddy(evalSFField)
 
+        # add widgets to the toolbar
+        toolBar.addWidget(bandwidthLabel)
+        toolBar.addWidget(bandwidthField)
 
-    def _createImageToolBar(self):
-        # should include conversion widgets and convert button ONLY
+        toolBar.addWidget(evalBuffLabel)
+        toolBar.addWidget(evalBuffField)
 
-        functions = QToolBar()
+        toolBar.addWidget(evalSFLabel)
+        toolBar.addWidget(evalSFField)
 
-        # ToolBar Buttons
-        #load_button = self._getLoadImageButton()
-        convert_button = self._getConvertImageButton() 
-        #export_button = self._getExportImageButton()
-
-        # Add Widgets to ToolBar
-            # create menu bar for file i/o
-        #functions.addWidget(load_button)
-        functions.addWidget(convert_button)
-        #functions.addWidget(export_button)
-        self.appManager.addToolBar(Qt.ToolBarArea.LeftToolBarArea, functions)
-
-    def _createIOMenu(self):
-        menubar = self.appManager.menuBar()
-        menubar.setNativeMenuBar(False)
-        file_menu = menubar.addMenu("&Menu")
-        
-        file_menu.addAction("Load Data", self.appManager._loadData)
-        file_menu.addAction("&Exit", self.appManager.close)
-
-
-    def _createAnalysisMenu(self):
-        menubar = self.appManager.menuBar()
-        menubar.setNativeMenuBar(False)
-        analysis_menu = menubar.addMenu("Analyze")
-
-        analysis_menu.addAction("Nearest Neighbors",self.appManager.close)
-
-
-
-    def _createToolBar(self):
-        tools = self.appManager.QToolBar()
-        tools.addAction("Exit", self.close)
-        self.appManager.addToolBar(tools)
-        
-    def _createStatusBar(self, message = "STATUS"):
-        status = QStatusBar()
-        status.showMessage(message)
-        self.appManager.setStatusBar(status)
-
-    def _createFunctionBar(self):
-        functions = QToolBar()
-        self.appManager.addToolBar(Qt.ToolBarArea.LeftToolBarArea, functions)
-
-
-# BUTTONS
-    def _getLoadImageButton(self):
-        # will be moved to menu bar
-
-        load_button = QPushButton("LODE")
-        load_button.clicked.connect(self.appManager._loadImage)
-
-        return load_button
-
-    def _getConvertImageButton(self):
-
-        convert_button = QPushButton("Connvert")
-        convert_button.clicked.connect(self.appManager._convertImage)
-
-        return convert_button
-
-    def _getExportImageButton(self):
-        # will be moved to menu bar
-
-        export_button = QPushButton("Ecksport")
-        export_button.clicked.connect(self.appManager._exportImage)
-
-        return export_button
-
+        self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
