@@ -23,7 +23,7 @@ from PyQt6.QtWidgets import (
     QGraphicsPixmapItem
     )
 
-from layout_objects import ImageWindow
+# from layout_objects import ImageWindow
 
 class DataManager:
     # DataManager class (backend) for spine tool
@@ -31,6 +31,7 @@ class DataManager:
         self.appManager = appManager
         print("data manager initialized")
 
+# Image Ops
     def _scramble(self, image):
         img_hc, img_wc = self._getImageCenter(image)
         new_image = np.random.uniform(low=0.0, high=255.0, size = image.shape)

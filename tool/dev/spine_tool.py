@@ -30,7 +30,7 @@ from PyQt6.QtWidgets import (
 
 # sys.path.append("../../frameworks/_pyqt/framework")
 
-from layout_objects import Window, ImageWindow
+# from layout_objects import Window, ImageWindow
 from window_manager import WindowManager
 from data_manager import DataManager
 
@@ -62,23 +62,25 @@ NOTES :
 
 """
 
-class SpineTool(ImageWindow):
+# class SpineTool(ImageWindow):
+class SpineTool(QMainWindow):
 # Initialization
-	def __init__(self):
-		super().__init__()
-			
+	def __init__(self, windowTitle = "SpineTool"):
+		# super().__init__()
+		super().__init__(parent=None)
+
+		self.resize(1200, 800)
+		self.setWindowTitle(windowTitle)
+		self.scene = None
+
+		self._initUI()
+
+
 	def _initUI(self):
 
 		self.windowManager = WindowManager(self)
 		self.dataManager = DataManager(self)
 
-		# create the graphics viewer
-		#self.graphicsView = QGraphicsView()
-		#self.setCentralWidget(self.graphicsView)
-		#self._createImageToolBar()
-		#self._createStatusBar()
-
-		# create menu bar for file i/o
 
 # ACTIONS :
 # ------------------------------------------------------------------------------------------------
@@ -189,92 +191,16 @@ class SpineTool(ImageWindow):
 			self._reload_canvas(pix_im)
 			self.statusBar().showMessage("SCRAMBLED !!!")
 
-# |_ Move all to data manager
 
-	# def _scramble(self, image):
-	# 	img_hc, img_wc = self._getImageCenter(image)
-	# 	new_image = np.random.uniform(low=0.0, high=255.0, size = image.shape)
-	# 	return new_image
+	def _reload_canvas(self, pixmap: QPixmap):
+		# reloads the graphics view with a new pixmap
+		if self.scene is None:
+			self.scene = QGraphicsScene(self)
+			self.graphicsView.setScene(self.scene)
+		else:
+			self.scene.clear()
 
-
-	# def _getImageCenter(self, arr: np.ndarray):
-	# 	height, width, _ = arr.shape
-	# 	return float(height // 2), float(width // 2)
-
-
-	# def _qImage2Pil(self, qImage: QImage):
-	# 	'''
-	# 	Converts a <QImage> to a pillow <Image>
-
-	# 	Params:
-	# 		<QImage> Any
-	# 	Returns:
-	# 		<Image> pillow image 
-	# 	'''
-	# 	if qImage is not None:
-	# 		arr = self._qImage2Ndarray(qImage)
-	# 		pilImage = Image.fromarray(arr)
-
-	# 		return pilImage
-
-	# def _pil2QImage(self, pilImage: Image):
-	# 	'''
-	# 	Converts numpy <ndarray> to PyQt <QImage>
-
-	# 	Params:
-	# 		<Image> pillow <Image>
-	# 	Returns:
-	# 		<QImage> format (RGBA8888)
-	# 	'''
-	# 	arr = np.asarray(pilImage)
-	# 	qImage = self._ndarray2QImage(arr)
-	# 	return qImage
-
-	# def _qImage2Ndarray(self, qImage: QImage):
-	# 	'''
-	# 	Converts a <QImage> to a numpy <ndarray>
-
-	# 	Params:
-	# 		<QImage> Any
-	# 	Returns:
-	# 		<ndarray> numpy array in image format (RGBA8888)
-	# 	'''
-	# 	if qImage is not None:
-	# 		qImage = qImage.convertToFormat(QImage.Format.Format_RGBA8888)
-	# 		width = qImage.width()
-	# 		height = qImage.height()
-
-	# 		ptr = qImage.bits()
-	# 		ptr.setsize(qImage.sizeInBytes())
-	# 		arr = np.array(ptr).reshape((height, width, 4))
-
-	# 		return arr
-
-	# def _ndarray2QImage(self, image: np.ndarray):
-	# 	'''
-	# 	Converts numpy <ndarray> to PyQt <QImage>
-
-	# 	Params:
-	# 		<ndarray> array in image format (Y, X, RGBA)
-	# 	Returns:
-	# 		<QImage> format (RGBA8888)
-	# 	'''
-	# 	qImage = QImage(image.data, 
-	# 					image.shape[1],
-	# 					image.shape[0],
-	# 					image.strides[0],
-	# 					QImage.Format.Format_RGBA8888)
-
-	# 	return qImage
-
-
-
-
-
-
-
-
-
-
-
+		self.pixmap_item = QGraphicsPixmapItem(pixmap)
+		self.scene.addItem(self.pixmap_item)
+		self.graphicsView.fitInView(self.pixmap_item, Qt.AspectRatioMode.KeepAspectRatio)
 
