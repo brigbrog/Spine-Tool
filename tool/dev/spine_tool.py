@@ -65,11 +65,11 @@ NOTES :
 # class SpineTool(ImageWindow):
 class SpineTool(QMainWindow):
 # Initialization
-	def __init__(self, windowTitle = "SpineTool"):
+	def __init__(self, windowTitle = "SpineTool", windowWidth = 1200, windowHeight = 600):
 		# super().__init__()
 		super().__init__(parent=None)
 
-		self.resize(1200, 800)
+		self.resize(windowWidth, windowHeight)
 		self.setWindowTitle(windowTitle)
 		self.scene = None
 
@@ -84,6 +84,27 @@ class SpineTool(QMainWindow):
 
 # ACTIONS :
 # ------------------------------------------------------------------------------------------------
+
+	def _placeHolder(self):
+		'''
+		fake method for place holding in feature design
+		'''
+		return
+
+
+	def _loadData(self):
+		'''
+		'''
+		self.statusBar().showMessage("SELECT DATA DIRECTORY")
+		fpath = QFileDialog.getExistingDirectory(
+				self, "Select Directory", ""
+			)
+		if not fpath:
+			return
+
+		for file in os.listdir(fpath):
+			print(file)
+
 
 	def _loadImage(self):
 		'''
@@ -128,14 +149,14 @@ class SpineTool(QMainWindow):
 		if not fpath:
 			return
 
-		image_q = self._getGraphicsScene()
+		image_q = self._pullScene()
 		image_pil = self.dataManager._qImage2Pil(image_q)
 
 		image_pil.save(fpath, "PNG")
 		self.statusBar().showMessage(f"IMAGE SAVED TO {fpath}")
 
 
-	def _getGraphicsScene(self):
+	def _pullScene(self):
 		'''
 		Pulls data from the scene <GraphicsView> and converts it to a QImage
 
@@ -176,7 +197,7 @@ class SpineTool(QMainWindow):
 			self.statusBar().showMessage("VOID SCENE")
 			return None
 		else:
-			image_q = self._getGraphicsScene()
+			image_q = self._pullScene()
 			image_pil = self.dataManager._qImage2Pil(image_q)
 			image = np.array(image_pil)
 
