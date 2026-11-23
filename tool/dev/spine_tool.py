@@ -9,8 +9,8 @@ import os
 from pathlib import Path
 
 import seaborn as sns
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
-from matplotlib.figure import Figure
+# from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
+# from matplotlib.figure import Figure
 
 import numpy as np
 from PIL import Image
