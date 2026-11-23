@@ -57,6 +57,18 @@ class SpineTool(QMainWindow):
 		# initialize back-end
 		self.dataManager = DataManager(self)
 
+
+
+
+# ACTIONS :
+# ------------------------------------------------------------------------------------------------
+
+	def _placeHolder(self):
+		'''
+		fake method for place holding in feature design
+		'''
+		return
+
 	def _runAnalysis(self, analysisType):
 		'''
 		'''
@@ -70,23 +82,10 @@ class SpineTool(QMainWindow):
 		self.dataManager._plotAnalysis(analysisType)
 
 
-# ACTIONS :
-# ------------------------------------------------------------------------------------------------
-
-	def _placeHolder(self):
-		'''
-		fake method for place holding in feature design
-		'''
-		return
-
-	def _ndarray2QImage(self, image: np.ndarray):
-		qimage = QImage(image.data, 
-						image.shape[1],
-						image.shape[0],
-						image.strides[0],
-						QImage.Format.Format_RGBA8888)
-
-		return qimage
+	def _clearViewPort(self):
+		scene = self.graphicsView.scene()
+		if scene is not None:
+			scene.clear()
 
 
 	def _loadTestImage(self):
@@ -105,17 +104,11 @@ class SpineTool(QMainWindow):
 		test_aimg = np.full((vp_h, vp_w, 1), 255, dtype=np.uint8)
 		test_img = np.concatenate([test_cimg, test_aimg], axis=2)
 
-		test_qimg = self._ndarray2QImage(test_img)
+		test_qimg = self.dataManager._ndarray2QImage(test_img)
 		test_qimg.setDevicePixelRatio(dpr)
 
 		pixmap = QPixmap.fromImage(test_qimg)
 		self._reloadCanvas(pixmap)
-
-
-	def _clearViewPort(self):
-		scene = self.graphicsView.scene()
-		if scene is not None:
-			scene.clear()
 
 
 	def _loadData(self):

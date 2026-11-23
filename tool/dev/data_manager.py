@@ -108,6 +108,19 @@ class DataManager:
         pass
 
 
+# STATIC METHODS
+
+    @staticmethod
+    def _ndarray2QImage(self, image: np.ndarray):
+      qimage = QImage(image.data, 
+                      image.shape[1],
+                      image.shape[0],
+                      image.strides[0],
+                      QImage.Format.Format_RGBA8888)
+
+      return qimage
+
+
     @staticmethod
     def get_nn_1D(item, arr, drop_self = True):
         '''
@@ -128,6 +141,7 @@ class DataManager:
         # return min_abs_idx, abs_dist_arr[min_abs_idx]
         return min_abs_idx, abs_dist_arr
 
+
     @staticmethod
     def avg_nn_1D(arr):
         '''
@@ -140,6 +154,7 @@ class DataManager:
             sum_nn_dist.append(nn_dist)
 
         return sum(sum_nn_dist) / len(sum_nn_dist), sum_nn_dist
+
 
     @staticmethod
     def dbscan(arr, eps, min_pts):

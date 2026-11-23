@@ -36,7 +36,7 @@ class WindowManager:
         
         self.appManager = appManager
         self._initUI()
-        
+
 
     def _initUI(self):
         '''
@@ -72,7 +72,6 @@ class WindowManager:
         '''
         Create the menu bar specifications and populate the menu bar
         '''
-        # self._loadTestImage()
         # specify the menu features 
         menu_specs = [
             (
@@ -131,7 +130,7 @@ class WindowManager:
                 if statusTip:
                     action.setStatusTip(statusTip)
 
-# TOOL BAR
+    # TOOL BARS
 
     def _createRunButton(self, analysisType: str):
         '''
