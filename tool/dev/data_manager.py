@@ -2,12 +2,20 @@
 
 import sys
 import os
+import io
 
 import numpy as np
 import pandas as pd
+from PIL import Image
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from scipy.stats import gaussian_kde
 
+from PyQt6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QImage
+
+
+# add DENSITY METHODS
 
 class DataManager:
     # Data Manager (backend) for spine tool
@@ -45,7 +53,7 @@ class DataManager:
         else:
             # CATCH THIS WHEN CALLING
             raise ValueError(f"Provided FPATH <{type(fpath)}> is invalid")
-        print(f"{self.data.head()}")
+        
         self.appManager.statusBar().showMessage(f"Loaded {file_count} files with full shape {self.data.shape}")
         return file_count
 
@@ -53,7 +61,7 @@ class DataManager:
     def _cleanBranchData(self):
         '''
         '''
-        if self.data:
+        if self.data is not None:
             if "BRANCH-ORDER" in self.data.columns.tolist():
                 self.data["BRANCH-ORDER"] = self.data["BRANCH-ORDER"].fillna(0)
                 self.data["BRANCH-ORDER"] = self.data["BRANCH-ORDER"].astype(np.int64)
@@ -63,11 +71,18 @@ class DataManager:
             raise ValueError("Data has not been initialized")
 
 
-    def _convertPlot2Array(self, figure):
+    def _convertPlot2Array(self, fig):
         '''
         convert a plt.plot to an image array for plotting in the central widget
         '''
-        pass
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', dpi=400) # <---- CREATE DYNAMIC RESOLUTION HELPER
+        buf.seek(0)
+
+        image = np.array(Image.open(buf))
+        buf.close()
+
+        return image
 
 
     def _runAnalysis(self, analysisType):
@@ -82,36 +97,105 @@ class DataManager:
         else:
             print("void analysis")
 
+
     def _plotAnalysis(self, analysisType):
         '''
         '''
-        if analysisType == 'dbscan':
-            self._runDBSCAN()
+        if self.data is None:
+            raise AssertionError("Initialize Data before attempting to plot spine locations")
+        assert self.data.shape[0] > 0, "Initialize Data before attempting to plot spine locations"
+        if analysisType == 'loc':
+            plot = self._plotLOC(0, 0, 500)
+        elif analysisType == 'dbscan':
+            plot = self._plotDBSCAN()
         elif analysisType == 'ripley':
-            self._runRIPLEY()
+            plot = self._plotRIPLEY()
         elif analysisType == 'kde':
-            self._runKDE()
+            plot = self._plotKDE()
         else:
             print("void analysis")
+            return
 
+        plotArr = self._convertPlot2Array(plot)
+        return plotArr
+
+
+# RUNNING
 
     def _runDBSCAN(self):
         print(f' I am DBSCAN')
         pass
 
+
     def _runRIPLEY(self):
         print(f' I am RIPLEY')
         pass
+
 
     def _runKDE(self):
         print(f' I am KDE')
         pass
 
 
+# PLOTTING 
+
+    def _plotDBSCAN(self):
+        pass
+
+    def _plotRIPLEY(self):
+        pass
+
+    def _plotKDE(self):
+        pass
+
+
+    def _plotLOC(self, width, height, size_scale):
+        '''
+        HEIGHT AND ASPECT SHOULD BE DYNAMIC TO VIEWPORT SIZE
+        '''
+        g = sns.FacetGrid(self.data, row='origin', height= 2.5, aspect=5, sharex=False, sharey=False, despine=False)
+        def plot_spines(data, size_scale, **kwargs):
+            ax = plt.gca()
+            x = data['SOMA-DISTANCE'].to_numpy()
+            y = data['BRANCH-ORDER'].to_numpy()
+            s = data['RAYBURST-VOLUME'].to_numpy() * size_scale
+
+            # origin_label = self.data['origin'].iloc[0]
+            branch_label = data["BRANCH-ORDER"].iloc[0]
+
+            ax.axhline(y=0, color='r', linestyle='--', linewidth=3.0, alpha=0.2)
+            ax.scatter(0, 0, marker='o', color='g', s=75, zorder=2)
+
+            for i, branch in enumerate(data["BRANCH-ORDER"].unique()):
+                mask = data["BRANCH-ORDER"] == branch
+                x_branch = x[mask]
+                y_branch = y[mask]
+                s_branch = s[mask]
+                ax.scatter(x_branch, y_branch, marker='h', s=s_branch, alpha=0.5, zorder=3, label=f'Branch {i}')
+
+            ax.set_ylim(-0.25, np.max(y) + 2)
+            ax.set_yticks([])
+            ax.set_ylabel('BRANCH')
+            ax.grid(True)
+
+        g.map_dataframe(plot_spines, size_scale=size_scale, hue='BRANCH-ORDER')
+        g.set_titles(row_template="{row_name}")
+
+        for ax in g.axes.flat:
+            ax.legend(loc="upper right")
+
+        g.figure.suptitle("Spine Locations", x=g.axes.flat[0].get_position().x0, fontsize=16, fontweight='bold', ha='left')
+        g.figure.tight_layout(rect=[0, 0, 1, 1])
+
+        return g
+
+
+
+
 # STATIC METHODS
 
     @staticmethod
-    def _ndarray2QImage(self, image: np.ndarray):
+    def _ndarray2QImage(image: np.ndarray):
       qimage = QImage(image.data, 
                       image.shape[1],
                       image.shape[0],

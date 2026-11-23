@@ -105,7 +105,7 @@ class WindowManager:
             (
                 "&Analyze",
                 [
-                    ("Spine Visualizer", self._createSpineVisualizer, None, "Open Spine Visualizer"), 
+                    ("Spine Visualizer", self._createSpineVisualizerToolBar, None, "Open Spine Visualizer"), 
                     ("Nearest Neighbors", self._createNearestNeighborsToolBar, None, "Open Nearest Neighbors"), 
                     ("DBSCAN Clusters", self._createDBSCANClustersToolBar, None, "Open DBSCAN"), 
                     ("Ripley K-Function", self._createRipleyKFunctionToolBar, None, "Open Ripley K-Function"), 
@@ -157,10 +157,23 @@ class WindowManager:
                 self.appManager.removeToolBar(toolbar)
                 toolbar.deleteLater()
 
-    def _createSpineVisualizer(self):
+    def _createSpineVisualizerToolBar(self):
         '''
         '''
         self._clearToolBar()
+        toolBar = QToolBar()
+
+        title = QLabel("Spine Locations")
+
+        # PLOT
+        plotButton = self._createPlotButton("loc")
+
+        # add widgets to the toolbar
+        toolBar.addWidget(title)
+        toolBar.addWidget(plotButton)
+
+        self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
+
 
     def _createNearestNeighborsToolBar(self):
         '''

@@ -38,6 +38,9 @@ from data_manager import DataManager
 NOTES :
 ------------------------------------------------------------------------------------------------
 
+VIEWPORT RESIZE needs attention, weird padding behavior
+
+
 """
 
 class SpineTool(QMainWindow):
@@ -79,7 +82,9 @@ class SpineTool(QMainWindow):
 		'''
 		'''
 		print(f'plotting {analysisType}...')
-		self.dataManager._plotAnalysis(analysisType)
+		plotArr = self.dataManager._plotAnalysis(analysisType)
+		print(plotArr.shape)
+		self._loadPlotArr(plotArr)
 
 
 	def _clearViewPort(self):
@@ -87,6 +92,27 @@ class SpineTool(QMainWindow):
 		if scene is not None:
 			scene.clear()
 
+	def _loadPlotArr(self, plotArr):
+		self._clearViewPort()
+
+		vp = self.graphicsView.viewport()
+		dpr = vp.devicePixelRatioF()  # e.g., 1.0 on standard displays, 2.0 on Retina/HiDPI
+		# vp_w = max(1, int(round(vp.width() * dpr)))
+		# vp_h = max(1, int(round(vp.height() * dpr)))
+
+		# print(f"width: {vp_w} (dpr={dpr})")
+		# print(f"height: {vp_h} (dpr={dpr})")
+
+		# # Generate RGBA uint8 directly (0..255) with opaque alpha channel
+		# test_cimg = np.random.randint(0, 256, size=(vp_h, vp_w, 3), dtype=np.uint8)
+		# test_aimg = np.full((vp_h, vp_w, 1), 255, dtype=np.uint8)
+		# test_img = np.concatenate([test_cimg, test_aimg], axis=2)
+
+		test_qimg = self.dataManager._ndarray2QImage(plotArr)
+		test_qimg.setDevicePixelRatio(dpr)
+
+		pixmap = QPixmap.fromImage(test_qimg)
+		self._reloadCanvas(pixmap)
 
 	def _loadTestImage(self):
 		self._clearViewPort()
@@ -124,6 +150,8 @@ class SpineTool(QMainWindow):
 		try:
 			self.dataManager._unloadData()
 			self.dataManager._initData(fpath)
+			self.dataManager._cleanBranchData()
+			print(f"{self.dataManager.data.head()}")
 		except ValueError:
 			self.statusBar().showMessage("SELECTED DATA DIRECTORY IS INVALID")
 
