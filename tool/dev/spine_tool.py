@@ -1,7 +1,6 @@
 '''
 Developed by Brian Brogan
-app construction for KnitKit
-For knitkit run see KnitKitApp.py
+app construction for SpineTool
 November 2026
 '''
 
@@ -28,9 +27,6 @@ from PyQt6.QtWidgets import (
 	QGraphicsPixmapItem
 	)
 
-# sys.path.append("../../frameworks/_pyqt/framework")
-
-# from layout_objects import Window, ImageWindow
 from window_manager import WindowManager
 from data_manager import DataManager
 
@@ -38,31 +34,8 @@ from data_manager import DataManager
 NOTES :
 ------------------------------------------------------------------------------------------------
 
-- Put Load, Export (change to Download ? ) in menu bar, leave image tool bar for transformation
-	widgets and convert button
-
-- create transformation widgets 
-	(
-		integer text entry : number of rows (nrows)
-		checkbox : invert image
-		slider : grid resolution (use automatic ranging for bounds around squareness)
-		slider : grid shift, x & y
-		slider : contrast threshold
-	)
-
-- Add multi channel support for image import
-
-- Add multi format support for image export
-
-- Update StatusBar functionality to display helpful messages when actions are completed
-
-- automatic center detection ? 
-
-- drag box ROI cropping ? :[]
-
 """
 
-# class SpineTool(ImageWindow):
 class SpineTool(QMainWindow):
 # Initialization
 	def __init__(self, windowTitle = "SpineTool", windowWidth = 1200, windowHeight = 600):

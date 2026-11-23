@@ -80,7 +80,7 @@ class WindowManager:
                         "Hide ToolBar",
                         self._clearToolBar,
                         "None",
-                        "None"
+                        "Hide the analysis ToolBar"
                     ),
                     None,  # separator
                     ("&Exit", self.appManager.close, "Ctrl+Q", "Close Spine Tool"), # <- handle this signal for confirmation
@@ -143,6 +143,8 @@ class WindowManager:
         self._clearToolBar()
         toolBar = QToolBar()
         
+        title = QLabel("DBSCAN")
+
         epsilonLabel = QLabel("Epsilon ")
         epsilonField = QLineEdit()
         epsilonField.setMaxLength(10)
@@ -158,6 +160,7 @@ class WindowManager:
         minPTSLabel.setBuddy(minPTSField)
         
         # add widgets to the toolbar
+        toolBar.addWidget(title)
         toolBar.addWidget(epsilonLabel)
         toolBar.addWidget(epsilonField)
 
@@ -172,6 +175,8 @@ class WindowManager:
         '''
         self._clearToolBar()
         toolBar = QToolBar()
+
+        title = QLabel("Ripley K-Function")
 
         radiusLowBoundLabel = QLabel("Radius Low Limit")
         radiusLowBoundField = QLineEdit()
@@ -195,6 +200,8 @@ class WindowManager:
         radiusDensityLabel.setBuddy(radiusDensityField)
 
         # add widgets to the toolbar
+        toolBar.addWidget(title)
+
         toolBar.addWidget(radiusLowBoundLabel)
         toolBar.addWidget(radiusLowBoundField)
 
@@ -212,6 +219,8 @@ class WindowManager:
         '''
         self._clearToolBar()
         toolBar = QToolBar()
+
+        title = QLabel("Kernel Density Estimate")
 
         bandwidthLabel = QLabel("Bandwidth")
         bandwidthField = QLineEdit()
@@ -235,6 +244,8 @@ class WindowManager:
         evalSFLabel.setBuddy(evalSFField)
 
         # add widgets to the toolbar
+        toolBar.addWidget(title)
+
         toolBar.addWidget(bandwidthLabel)
         toolBar.addWidget(bandwidthField)
 
