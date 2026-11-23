@@ -7,9 +7,14 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
+import seaborn as sns
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt
+
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QImage
-from PyQt6 import QtWidgets
+from PyQt6.QtWidgets import QWidget, QFrame, QVBoxLayout
 from PyQt6.QtWidgets import (
     QApplication,
     QLabel,
@@ -26,16 +31,24 @@ from PyQt6.QtWidgets import (
 
 
 class WindowManager: 
-    # Window Manager for SpineToolApp
+    # Window Manager (frontend) for SpineToolApp
     def __init__(self, appManager):
         
         self.appManager = appManager
         self._initUI()
-
+        
 
     def _initUI(self):
-        #
-        self.appManager.graphicsView = QGraphicsView()
+        '''
+        Intialize the window userface
+        '''
+        self.appManager.graphicsView = QGraphicsView(self.appManager)
+        self.appManager.graphicsView.setFrameShape(QFrame.Shape.NoFrame)
+        self.appManager.graphicsView.setViewportMargins(10, 10, 10, 10)
+
+        # self.appManager.graphicsView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        # self.appManager.graphicsView.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+
         self.appManager.setCentralWidget(self.appManager.graphicsView)
 
         # create the menu
@@ -59,6 +72,7 @@ class WindowManager:
         '''
         Create the menu bar specifications and populate the menu bar
         '''
+        # self._loadTestImage()
         # specify the menu features 
         menu_specs = [
             (
@@ -84,6 +98,9 @@ class WindowManager:
                     ),
                     None,  # separator
                     ("&Exit", self.appManager.close, "Ctrl+Q", "Close Spine Tool"), # <- handle this signal for confirmation
+                    None,
+                    ("&Load Test Image", self.appManager._loadTestImage, "", ""),
+                    ("&Clear Viewport", self.appManager._clearViewPort, "", ""),
                 ],
             ),
             (
@@ -116,6 +133,23 @@ class WindowManager:
 
 # TOOL BAR
 
+    def _createRunButton(self, analysisType: str):
+        '''
+        '''
+        runButton = QPushButton("Run")
+        # runButton.clicked.connect(self.appManager._runAnalysis(analysisType))
+        runButton.clicked.connect(lambda _checked=False, kind=analysisType: self.appManager._runAnalysis(kind))
+
+        return runButton
+
+    def _createPlotButton(self, analysisType: str):
+        '''
+        '''
+        plotButton = QPushButton("Plot")
+        plotButton.clicked.connect(lambda _checked=False, kind=analysisType: self.appManager._plotAnalysis(kind))
+
+        return plotButton
+
     def _clearToolBar(self):
         '''
         '''
@@ -124,12 +158,10 @@ class WindowManager:
                 self.appManager.removeToolBar(toolbar)
                 toolbar.deleteLater()
 
-
     def _createSpineVisualizer(self):
         '''
         '''
         self._clearToolBar()
-
 
     def _createNearestNeighborsToolBar(self):
         '''
@@ -145,6 +177,7 @@ class WindowManager:
         
         title = QLabel("DBSCAN")
 
+        # EPS
         epsilonLabel = QLabel("Epsilon ")
         epsilonField = QLineEdit()
         epsilonField.setMaxLength(10)
@@ -152,20 +185,29 @@ class WindowManager:
         epsilonField.setStatusTip("Epsilon")
         epsilonLabel.setBuddy(epsilonField)
 
+        # MIN PTS
         minPTSLabel = QLabel("Min Points ")
         minPTSField = QLineEdit()
         minPTSField.setMaxLength(10)
         minPTSField.setPlaceholderText("2")
         minPTSField.setStatusTip("Minimum Points")
         minPTSLabel.setBuddy(minPTSField)
+
+        # RUN / PLOT
+        runButton = self._createRunButton("dbscan")
+        plotButton = self._createPlotButton("dbscan")
         
         # add widgets to the toolbar
         toolBar.addWidget(title)
+        
         toolBar.addWidget(epsilonLabel)
         toolBar.addWidget(epsilonField)
 
         toolBar.addWidget(minPTSLabel)
         toolBar.addWidget(minPTSField)
+
+        toolBar.addWidget(runButton)
+        toolBar.addWidget(plotButton)
 
         self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
 
@@ -199,6 +241,10 @@ class WindowManager:
         radiusDensityField.setStatusTip("Radius array density for Ripley K-Function Analysis")
         radiusDensityLabel.setBuddy(radiusDensityField)
 
+        # RUN / PLOT
+        runButton = self._createRunButton("ripley")
+        plotButton = self._createPlotButton("ripley")
+
         # add widgets to the toolbar
         toolBar.addWidget(title)
 
@@ -210,6 +256,9 @@ class WindowManager:
 
         toolBar.addWidget(radiusDensityLabel)
         toolBar.addWidget(radiusDensityField)
+
+        toolBar.addWidget(runButton)
+        toolBar.addWidget(plotButton)
 
         self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
 
@@ -243,6 +292,10 @@ class WindowManager:
         evalSFField.setStatusTip("Evaluation grid multiplicative factor")
         evalSFLabel.setBuddy(evalSFField)
 
+        # RUN / PLOT
+        runButton = self._createRunButton("kde")
+        plotButton = self._createPlotButton("kde")
+
         # add widgets to the toolbar
         toolBar.addWidget(title)
 
@@ -254,5 +307,8 @@ class WindowManager:
 
         toolBar.addWidget(evalSFLabel)
         toolBar.addWidget(evalSFField)
+
+        toolBar.addWidget(runButton)
+        toolBar.addWidget(plotButton)
 
         self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)

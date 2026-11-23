@@ -1,4 +1,7 @@
 '''
+
+# THIS FILE IS MISLOCATED   
+
 Developed by Brian Brogan
 image utilities for KnitKit -------> SUPPORTS ONLY PILLOW, NUMPY DATA
 For knitkit run see KnitKitApp.py
@@ -11,6 +14,9 @@ from PIL import Image, ImageOps
 from scipy.signal import convolve
 
 
+
+# Designed to be sub class to "ImageWindow-like class"
+# see layout-objects in Application-Frameworks
 class ImageUtil:
     @staticmethod
     def _scramble(self, image):

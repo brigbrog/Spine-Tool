@@ -8,12 +8,16 @@ import sys
 import os
 from pathlib import Path
 
+import seaborn as sns
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
+from matplotlib.figure import Figure
+
 import numpy as np
 from PIL import Image
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QImage
-from PyQt6 import QtWidgets
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 from PyQt6.QtWidgets import (
 	QApplication,
 	QLabel,
@@ -42,17 +46,28 @@ class SpineTool(QMainWindow):
 		# super().__init__()
 		super().__init__(parent=None)
 
-		self.resize(windowWidth, windowHeight)
+		self.windowWidth = windowWidth
+		self.windowHeight = windowHeight
+		self.resize(self.windowWidth, self.windowHeight)
 		self.setWindowTitle(windowTitle)
 		self.scene = None
 
-		self._initUI()
-
-
-	def _initUI(self):
-
+		# initialize front-end
 		self.windowManager = WindowManager(self)
+		# initialize back-end
 		self.dataManager = DataManager(self)
+
+	def _runAnalysis(self, analysisType):
+		'''
+		'''
+		print(f'running {analysisType}...')
+		self.dataManager._runAnalysis(analysisType)
+
+	def _plotAnalysis(self, analysisType):
+		'''
+		'''
+		print(f'plotting {analysisType}...')
+		self.dataManager._plotAnalysis(analysisType)
 
 
 # ACTIONS :
@@ -63,6 +78,44 @@ class SpineTool(QMainWindow):
 		fake method for place holding in feature design
 		'''
 		return
+
+	def _ndarray2QImage(self, image: np.ndarray):
+		qimage = QImage(image.data, 
+						image.shape[1],
+						image.shape[0],
+						image.strides[0],
+						QImage.Format.Format_RGBA8888)
+
+		return qimage
+
+
+	def _loadTestImage(self):
+		self._clearViewPort()
+
+		vp = self.graphicsView.viewport()
+		dpr = vp.devicePixelRatioF()  # e.g., 1.0 on standard displays, 2.0 on Retina/HiDPI
+		vp_w = max(1, int(round(vp.width() * dpr)))
+		vp_h = max(1, int(round(vp.height() * dpr)))
+
+		print(f"width: {vp_w} (dpr={dpr})")
+		print(f"height: {vp_h} (dpr={dpr})")
+
+		# Generate RGBA uint8 directly (0..255) with opaque alpha channel
+		test_cimg = np.random.randint(0, 256, size=(vp_h, vp_w, 3), dtype=np.uint8)
+		test_aimg = np.full((vp_h, vp_w, 1), 255, dtype=np.uint8)
+		test_img = np.concatenate([test_cimg, test_aimg], axis=2)
+
+		test_qimg = self._ndarray2QImage(test_img)
+		test_qimg.setDevicePixelRatio(dpr)
+
+		pixmap = QPixmap.fromImage(test_qimg)
+		self._reloadCanvas(pixmap)
+
+
+	def _clearViewPort(self):
+		scene = self.graphicsView.scene()
+		if scene is not None:
+			scene.clear()
 
 
 	def _loadData(self):
@@ -75,118 +128,14 @@ class SpineTool(QMainWindow):
 		if not fpath:
 			return
 
-		for file in os.listdir(fpath):
-			print(file)
+		try:
+			self.dataManager._unloadData()
+			self.dataManager._initData(fpath)
+		except ValueError:
+			self.statusBar().showMessage("SELECTED DATA DIRECTORY IS INVALID")
 
 
-	def _loadImage(self):
-		'''
-		add multi channel support
-		'''
-		self.statusBar().showMessage("SELECT IMAGE")
-		fpath, _ = QFileDialog.getOpenFileName(
-				self, "Select Image", "", "Image Files (*.png *.jpg *.jpeg *.bmp)"
-			)
-		if not fpath:
-			return
-
-		image_pil = Image.open(fpath)
-		image_pil = image_pil.convert("L")
-
-		im_data = image_pil.tobytes("raw", "L")
-		qimage = QImage(
-			im_data, 
-			image_pil.width,
-			image_pil.height, 
-			image_pil.width, 
-			QImage.Format.Format_Grayscale8
-		)
-
-		pixmap = QPixmap.fromImage(qimage)
-		self._reload_canvas(pixmap)
-		self.statusBar().showMessage("IMAGE LOADED")
-
-
-	def _exportImage(self):
-
-		# check if scene is void
-		if not self.scene:
-			self.statusBar().showMessage("VOID SCENE")
-			return None
-		
-		# prompt to select save path
-		self.statusBar().showMessage("SELECT SAVE")
-		fpath, _ = QFileDialog.getSaveFileName(
-				self, "Select Save Location", "", "PNG Files (*.png)"
-			)
-		if not fpath:
-			return
-
-		image_q = self._pullScene()
-		image_pil = self.dataManager._qImage2Pil(image_q)
-
-		image_pil.save(fpath, "PNG")
-		self.statusBar().showMessage(f"IMAGE SAVED TO {fpath}")
-
-
-	def _pullScene(self):
-		'''
-		Pulls data from the scene <GraphicsView> and converts it to a QImage
-
-		Params:
-			None
-		Returns:
-			<QImage> of the data present in the scene GraphicsView
-		'''
-		# search for pixmap items in the scene
-		pixmap_item = None
-		for item in self.scene.items():
-			if isinstance(item, QGraphicsPixmapItem):
-				pixmap_item = item
-				break
-		# if no pixmap item was found in the scene, return None
-		if not pixmap_item:
-			return None
-
-		# convert the pixmap item to a QImage
-		pixmap = pixmap_item.pixmap()
-		qimage = pixmap.toImage()
-
-		return qimage
-
-
-	def _convertImage(self):
-		'''
-		Converts the current image in <self.GraphicsView> with the HARD-CODED transformation. After converting the 
-		canvas is reloaded. The original image is not preserved. If canvas is empty, returns None
-
-		Params:
-			None
-		Returns:
-			None
-		
-		'''
-		if not self.scene:
-			self.statusBar().showMessage("VOID SCENE")
-			return None
-		else:
-			image_q = self._pullScene()
-			image_pil = self.dataManager._qImage2Pil(image_q)
-			image = np.array(image_pil)
-
-			# transform
-			new_image = self.dataManager._scramble(image)
-
-			# QImage
-			qimage = self.dataManager._ndarray2QImage(new_image)
-			pix_im = QPixmap(qimage)
-
-			# RELOAD
-			self._reload_canvas(pix_im)
-			self.statusBar().showMessage("SCRAMBLED !!!")
-
-
-	def _reload_canvas(self, pixmap: QPixmap):
+	def _reloadCanvas(self, pixmap: QPixmap):
 		# reloads the graphics view with a new pixmap
 		if self.scene is None:
 			self.scene = QGraphicsScene(self)
@@ -197,4 +146,3 @@ class SpineTool(QMainWindow):
 		self.pixmap_item = QGraphicsPixmapItem(pixmap)
 		self.scene.addItem(self.pixmap_item)
 		self.graphicsView.fitInView(self.pixmap_item, Qt.AspectRatioMode.KeepAspectRatio)
-

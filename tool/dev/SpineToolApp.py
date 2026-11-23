@@ -23,7 +23,10 @@ if __name__ == "__main__":
 
 	app = QApplication([])
 
-	window = SpineTool(windowTitle = "SpineTool (0.0)")
+	window = SpineTool(
+		windowTitle = "SpineTool (0.0)",
+		windowWidth = 2000,
+		windowHeight = 1000)
 	
 	window.show()
 	sys.exit(app.exec())
