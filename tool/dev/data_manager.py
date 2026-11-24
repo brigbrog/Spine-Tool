@@ -4,7 +4,7 @@ import sys
 import os
 import io
 
-sys.path.append("../../analysis")
+# sys.path.append("../../analysis")
 
 from density_methods import SpineDensity as sd
 
