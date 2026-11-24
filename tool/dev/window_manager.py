@@ -2,30 +2,30 @@
 
 import sys
 import os
-from pathlib import Path
+# from pathlib import Path
 
 import numpy as np
-from PIL import Image
+# from PIL import Image
 
-import seaborn as sns
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
-from matplotlib.figure import Figure
+# import seaborn as sns
+# from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
+# from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QImage
-from PyQt6.QtWidgets import QWidget, QFrame, QVBoxLayout, QSlider
+# from PyQt6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QImage
+from PyQt6.QtWidgets import QFrame, QSlider #, QVBoxLayout,QWidget
 from PyQt6.QtWidgets import (
-    QApplication,
+    # QApplication,
     QLabel,
-    QMainWindow,
+    # QMainWindow,
     QStatusBar,
     QToolBar,
     QGraphicsView,
     QPushButton,
-    QFileDialog,
-    QGraphicsScene,
-    QGraphicsPixmapItem,
+    # QFileDialog,
+    # QGraphicsScene,
+    # QGraphicsPixmapItem,
     QLineEdit
     )
 
@@ -111,7 +111,7 @@ class WindowManager:
                     ),
                     (   
                         "Export",
-                        self.appManager._placeHolder,
+                        self.appManager._exportData,
                         "Ctrl+S",
                         "Select a save location and specify a filename for the analysis data."
                     ),
@@ -156,6 +156,7 @@ class WindowManager:
                 if statusTip:
                     action.setStatusTip(statusTip)
 
+
     # TOOL BARS
 
 
@@ -166,6 +167,7 @@ class WindowManager:
         runButton = QPushButton("Run")
 
         def onClicked(_checked=False):
+            self.appManager.currentAnalysisType = analysisType
             analysisParams = {
                 # param: self._parseLineEditFloat(field, default, type)
                 param: self._parseLineEditValue(field, default, type)

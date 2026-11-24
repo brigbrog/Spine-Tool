@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from sklearn.cluster import DBSCAN
 from scipy.stats import gaussian_kde
 
-from PyQt6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QImage
+from PyQt6.QtGui import QImage # QAction, QIcon, QKeySequence, QPixmap,
 
 
 class DataManager:

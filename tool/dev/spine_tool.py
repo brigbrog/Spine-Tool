@@ -6,26 +6,29 @@ November 2026
 
 import sys
 import os
-from pathlib import Path
+# from pathlib import Path
 
-import seaborn as sns
+# import seaborn as sns
 # from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg, NavigationToolbar2QT
 # from matplotlib.figure import Figure
 
 import numpy as np
-from PIL import Image
+import pandas as pd
+# from PIL import Image
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QImage
-from PyQt6.QtWidgets import QWidget, QVBoxLayout
+from PyQt6.QtGui import QPixmap, QImage #, QAction, QIcon, QKeySequence, 
+
 from PyQt6.QtWidgets import (
-	QApplication,
-	QLabel,
+	# QWidget,
+	# QVBoxLayout,
+	# QApplication,
+	# QLabel,
 	QMainWindow,
-	QStatusBar,
-	QToolBar,
-	QGraphicsView,
-	QPushButton,
+	# QStatusBar,
+	# QToolBar,
+	# QGraphicsView,
+	# QPushButton,
 	QFileDialog,
 	QGraphicsScene,
 	QGraphicsPixmapItem
@@ -53,6 +56,10 @@ class SpineTool(QMainWindow):
 		self.resize(self.windowWidth, self.windowHeight)
 		self.setWindowTitle(windowTitle)
 		self.scene = None
+
+		# I / O Fields
+		self.originPath = None
+		self.currentAnalysisType = None
 
 		# initialize front-end
 		self.windowManager = WindowManager(self)
@@ -124,7 +131,6 @@ class SpineTool(QMainWindow):
 		# print(f"width: {vp_w} (dpr={dpr})")
 		# print(f"height: {vp_h} (dpr={dpr})")
 
-		# Generate RGBA uint8 directly (0..255) with opaque alpha channel
 		test_cimg = np.random.randint(0, 256, size=(vp_h, vp_w, 3), dtype=np.uint8)
 		test_aimg = np.full((vp_h, vp_w, 1), 255, dtype=np.uint8)
 		test_img = np.concatenate([test_cimg, test_aimg], axis=2)
@@ -145,7 +151,7 @@ class SpineTool(QMainWindow):
 			)
 		if not fpath:
 			return
-
+		self.originPath = fpath
 		try:
 			self.dataManager._unloadData()
 			self.dataManager._initData(fpath)
@@ -153,6 +159,39 @@ class SpineTool(QMainWindow):
 			print(f"{self.dataManager.data.head()}")
 		except ValueError:
 			self.statusBar().showMessage("SELECTED DATA DIRECTORY IS INVALID")
+
+
+	def _exportData(self):
+		'''
+		'''
+		fname = None
+		data = None
+
+		if self.currentAnalysisType is None:
+			self.statusBar().showMessage("PERFORM ANALYSIS BEFORE ATTEMPTING TO EXPORT")
+			return
+		elif self.currentAnalysisType == 'nn':
+			fname = os.path.basename(self.originPath) + '_nearest_neighbors'
+			data = self.dataManager.nnData
+		elif self.currentAnalysisType == 'dbscan':
+			fname = os.path.basename(self.originPath) + '_DBSCAN'
+			data = self.dataManager.dbscanData
+		elif self.currentAnalysisType == 'ripley':
+			fname = os.path.basename(self.originPath) + '_ripley'
+			data = self.dataManager.ripleyData
+		elif self.currentAnalysisType == 'kde':
+			fname = os.path.basename(self.originPath) + '_kde'
+			data = self.dataManager.kdeData
+
+		if fname is None:
+			return
+		else:
+			fpath = QFileDialog.getExistingDirectory(
+				self, "Select Directory", ""
+			)
+			save_path = os.path.join(fpath, fname+".csv")
+
+			data.to_csv(save_path)
 
 
 	def _reloadCanvas(self, pixmap: QPixmap):
