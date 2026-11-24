@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction, QIcon, QKeySequence, QPixmap, QImage
-from PyQt6.QtWidgets import QWidget, QFrame, QVBoxLayout
+from PyQt6.QtWidgets import QWidget, QFrame, QVBoxLayout, QSlider
 from PyQt6.QtWidgets import (
     QApplication,
     QLabel,
@@ -98,8 +98,8 @@ class WindowManager:
                     None,  # separator
                     ("&Exit", self.appManager.close, "Ctrl+Q", "Close Spine Tool"), # <- handle this signal for confirmation
                     None,
-                    ("&Load Test Image", self.appManager._loadTestImage, "", ""),
-                    ("&Clear Viewport", self.appManager._clearViewPort, "", ""),
+                    ("&Load Test Image", self.appManager._loadTestImage, "Ctrl+T", ""),
+                    ("&Clear Viewport", self.appManager._clearViewPort, "Ctrl+C", ""),
                 ],
             ),
             (
@@ -168,8 +168,14 @@ class WindowManager:
         # PLOT
         plotButton = self._createPlotButton("loc")
 
+        # CONTROLS
+        heightSlider =  QSlider(Qt.Orientation.Horizontal)
+        # aspectSlider
+        # sizeSlider
+
         # add widgets to the toolbar
         toolBar.addWidget(title)
+        toolBar.addWidget(heightSlider)
         toolBar.addWidget(plotButton)
 
         self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
@@ -179,6 +185,22 @@ class WindowManager:
         '''
         '''
         self._clearToolBar()
+        toolBar = QToolBar ()
+
+        title = QLabel("Nearest Neighbors")
+
+        # PLOT
+        plotButton = self._createPlotButton("nn")
+
+        # CONTROLS
+        somethingSlider = QSlider(Qt.Orientation.Horizontal)
+
+        # add widgets to the toolbar
+        toolBar.addWidget(title)
+        toolBar.addWidget(somethingSlider)
+        toolBar.addWidget(plotButton)
+
+        self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
 
 
     def _createDBSCANClustersToolBar(self):
