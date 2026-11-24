@@ -1,6 +1,7 @@
 '''
 
-# THIS FILE IS MISLOCATED   
+# THIS FILE IS MISLOCATED
+    Implementation here should be for graphicsView transformation (not currently needed)
 
 Developed by Brian Brogan
 image utilities for KnitKit -------> SUPPORTS ONLY PILLOW, NUMPY DATA
