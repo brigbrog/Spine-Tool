@@ -46,8 +46,8 @@ class WindowManager:
         self.appManager.graphicsView.setFrameShape(QFrame.Shape.NoFrame)
         self.appManager.graphicsView.setViewportMargins(10, 10, 10, 10)
 
-        # self.appManager.graphicsView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        # self.appManager.graphicsView.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.appManager.graphicsView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.appManager.graphicsView.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         self.appManager.setCentralWidget(self.appManager.graphicsView)
 
@@ -60,68 +60,12 @@ class WindowManager:
         self._createStatusBar()
 
 
-
-
-
-
-
-
-
-
-
-    # def _parseDBSCANParams(self, epsilonField: QLineEdit, minPTSField: QLineEdit) -> dict:
-    #     raw_eps = epsilonField.text().strip()
-    #     raw_min_pts = minPTSField.text().strip()
-
-    #     try:
-    #         eps = float(raw_eps) if raw_eps else 0.5
-    #     except ValueError as exc:
-    #         raise ValueError("Epsilon must be a valid number.") from exc
-
-    #     if eps <= 0:
-    #         raise ValueError("Epsilon must be greater than 0.")
-
-    #     try:
-    #         min_pts = int(raw_min_pts) if raw_min_pts else 2
-    #     except ValueError as exc:
-    #         raise ValueError("Min Points must be a whole number.") from exc
-
-    #     if min_pts < 1:
-    #         raise ValueError("Min Points must be at least 1.")
-
-    #     return {"eps": eps, "min_samples": min_pts}
-
-
-    # def _parseLineEditFloat(self, field: QLineEdit, default: float, type) -> float:
-    #     raw = field.text().strip()
-    #     print(f'raw read dbscan : {raw}')
-    #     try: 
-    #         flt = float(raw) if raw else default
-    #     except ValueError as exc:
-    #         raise ValueError("Field entry cannot be converted to valid float") from exc
-    #     print(f'parsed output : {flt}')
-    #     return flt.astype(type)
-
-
-    # def _parseLineEditValue(self, field: QLineEdit, default, target_type):
-        # raw = field.text().strip()
-        # print(f'raw read dbscan : {raw}')
-        # try:
-        #     value = target_type(raw) if raw else default
-        # except ValueError as exc:
-        #     # value = target_type(default)
-        #     value = default
-        #     #                                                                                            ADD A STATUS MESSAGE HERE
-        # print(f'parsed output : {value}')
-        # return value
-
-
     def _parseLineEditValue(self, field: QLineEdit, default, target_type):
         '''
         ADD RANGE LIMIT
         '''
         raw = field.text().strip()
-        print(f'raw read dbscan : {raw}')
+        # print(f'raw read dbscan : {raw}')
         if not raw:
             value = default
         else:
@@ -137,19 +81,12 @@ class WindowManager:
                 else:
                     value = default
                     # ADD A STATUS MESSAGE HERE
-        print(f'parsed output : {value}')
+        # print(f'parsed output : {value}')
         return value
 
 
-
-
-
-
-
-
-
-
 # FEATURES
+
 
     def _createStatusBar(self, message = "STATUS"):
         status = QStatusBar()
@@ -221,25 +158,6 @@ class WindowManager:
 
     # TOOL BARS
 
-    # def _createRunButton(self, analysisType: str, analysisParams: dict):
-    # def _createRunButton(self, analysisType: str, fields: dict):
-    #     '''
-    #     analysisParams {"analysisType": str, "analysisParams": dict}
-    #     '''
-    #     runButton = QPushButton("Run")
-
-    #     analysisParams = {}
-    #     for param, (field, default) in fields.items():
-    #         analysisParams[param] = self._parseLineEditFloat(field, default)
-
-    #     toPass = {
-    #     'analysisType': analysisType,
-    #     'analysisParams': analysisParams
-    #     }
-    #     runButton.clicked.connect(lambda _checked=False, kind=toPass: self.appManager._runAnalysis(kind))
-
-    #     return runButton
-
 
     def _createRunButton(self, analysisType: str, fields: dict):
         '''
@@ -271,6 +189,7 @@ class WindowManager:
 
         return plotButton
 
+
     def _clearToolBar(self):
         '''
         '''
@@ -278,6 +197,7 @@ class WindowManager:
             if self.appManager.toolBarArea(toolbar) == Qt.ToolBarArea.RightToolBarArea:
                 self.appManager.removeToolBar(toolbar)
                 toolbar.deleteLater()
+
 
     def _createSpineVisualizerToolBar(self):
         '''

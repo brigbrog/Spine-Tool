@@ -46,7 +46,6 @@ VIEWPORT RESIZE needs attention, weird padding behavior
 class SpineTool(QMainWindow):
 # Initialization
 	def __init__(self, windowTitle = "SpineTool", windowWidth = 1200, windowHeight = 600):
-		# super().__init__()
 		super().__init__(parent=None)
 
 		self.windowWidth = windowWidth
@@ -69,33 +68,6 @@ class SpineTool(QMainWindow):
 		fake method for place holding in feature design
 		'''
 		return
-
-
-
-
-	# def _parseLineEditFloat(self, field: QLineEdit, default: float):
-	# 	raw = field.text().strip()
-
-	# 	try: 
-	# 		flt = float(raw) if raw else default
-	# 	except ValueError as exc:
-	# 		raise ValueError("Field entry cannot be converted to valid float") from exc
-
-	# 	return flt
-
-
-
-
-
-
-	# def _runAnalysis(self, analysisType):
-	# 	'''
-	# 	'''
-	# 	if self.dataManager.data is None:
-	# 		self.statusBar().showMessage("LOAD DATA BEFORE RUNNING ANALYSIS")
-	# 		return
-
-	# 	self.dataManager._runAnalysis(analysisType)
 
 
 	def _runAnalysis(self, analysisParams):
@@ -145,12 +117,12 @@ class SpineTool(QMainWindow):
 		self._clearViewPort()
 
 		vp = self.graphicsView.viewport()
-		dpr = vp.devicePixelRatioF()  # e.g., 1.0 on standard displays, 2.0 on Retina/HiDPI
-		vp_w = max(1, int(round(vp.width() * dpr)))
-		vp_h = max(1, int(round(vp.height() * dpr)))
+		dpr = vp.devicePixelRatioF()
+		vp_w = max(1, int(round(vp.width())))
+		vp_h = max(1, int(round(vp.height())))
 
-		print(f"width: {vp_w} (dpr={dpr})")
-		print(f"height: {vp_h} (dpr={dpr})")
+		# print(f"width: {vp_w} (dpr={dpr})")
+		# print(f"height: {vp_h} (dpr={dpr})")
 
 		# Generate RGBA uint8 directly (0..255) with opaque alpha channel
 		test_cimg = np.random.randint(0, 256, size=(vp_h, vp_w, 3), dtype=np.uint8)
