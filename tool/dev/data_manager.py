@@ -92,17 +92,25 @@ class DataManager:
 
         return image
 
+
 # CONTROL
 
-    def _runAnalysis(self, analysisType):
+
+    def _runAnalysis(self, analysisType, analysisParams: dict):
         '''
         '''
-        if analysisType == 'dbscan':
-            self._runDBSCAN()
+        if self.data is None:
+            raise AssertionError("Initialize Data before attempting to analyze")
+        assert self.data.shape[0] > 0, "Initialize Data before attempting to plot"
+
+        if analysisType == 'nn':
+            self.nnData = self._runNN() # TAKES NO PARAMS
+        elif analysisType == 'dbscan':
+            self.dbscanData = self._runDBSCAN(**analysisParams)
         elif analysisType == 'ripley':
-            self._runRIPLEY()
+            self.ripleyData = self._runRIPLEY(**analysisParams)
         elif analysisType == 'kde':
-            self._runKDE()
+            self.kdeData = self._runKDE(**analysisParams)
         else:
             print("void analysis")
 
@@ -111,21 +119,31 @@ class DataManager:
         '''
         '''
         if self.data is None:
-            raise AssertionError("Initialize Data before attempting to plot spine locations")
-        assert self.data.shape[0] > 0, "Initialize Data before attempting to plot spine locations"
+            raise AssertionError("Initialize Data before attempting to plot")
+        assert self.data.shape[0] > 0, "Initialize Data before attempting to plot"
+
         if analysisType == 'loc':
             plot = self._plotLOC(500)
         elif analysisType == 'nn':
-            self.nnData = self._runNN()
+            #self.nnData = self._runNN()
+            if self.nnData is None:
+                # self.appManager.statusBar().showMessage("RUN ANALYSIS BEFORE PLOTTING")
+                return
             plot = self._plotNN(self.nnData)
         elif analysisType == 'dbscan':
-            self.dbscanData = self._runDBSCAN()
+            if self.dbscanData is None:
+                # self.appManager.statusBar().showMessage("RUN ANALYSIS BEFORE PLOTTING")
+                return
             plot = self._plotDBSCAN(self.dbscanData)
         elif analysisType == 'ripley':
-            self.ripleyData = self._runRIPLEY()
+            if self.ripleyData is None:
+                # self.appManager.statusBar().showMessage("RUN ANALYSIS BEFORE PLOTTING")
+                return
             plot = self._plotRIPLEY(self.ripleyData)
         elif analysisType == 'kde':
-            self.kdeData = self._runKDE()
+            if self.kdeData is None:
+                # self.appManager.statusBar().showMessage("RUN ANALYSIS BEFORE PLOTTING")
+                return
             plot = self._plotKDE(self.kdeData)
         else:
             print("void analysis")
@@ -136,6 +154,7 @@ class DataManager:
 
 
 # RUN ANALYSIS
+
 
     def _runNN(self):
         '''

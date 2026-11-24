@@ -60,6 +60,95 @@ class WindowManager:
         self._createStatusBar()
 
 
+
+
+
+
+
+
+
+
+
+    # def _parseDBSCANParams(self, epsilonField: QLineEdit, minPTSField: QLineEdit) -> dict:
+    #     raw_eps = epsilonField.text().strip()
+    #     raw_min_pts = minPTSField.text().strip()
+
+    #     try:
+    #         eps = float(raw_eps) if raw_eps else 0.5
+    #     except ValueError as exc:
+    #         raise ValueError("Epsilon must be a valid number.") from exc
+
+    #     if eps <= 0:
+    #         raise ValueError("Epsilon must be greater than 0.")
+
+    #     try:
+    #         min_pts = int(raw_min_pts) if raw_min_pts else 2
+    #     except ValueError as exc:
+    #         raise ValueError("Min Points must be a whole number.") from exc
+
+    #     if min_pts < 1:
+    #         raise ValueError("Min Points must be at least 1.")
+
+    #     return {"eps": eps, "min_samples": min_pts}
+
+
+    # def _parseLineEditFloat(self, field: QLineEdit, default: float, type) -> float:
+    #     raw = field.text().strip()
+    #     print(f'raw read dbscan : {raw}')
+    #     try: 
+    #         flt = float(raw) if raw else default
+    #     except ValueError as exc:
+    #         raise ValueError("Field entry cannot be converted to valid float") from exc
+    #     print(f'parsed output : {flt}')
+    #     return flt.astype(type)
+
+
+    # def _parseLineEditValue(self, field: QLineEdit, default, target_type):
+        # raw = field.text().strip()
+        # print(f'raw read dbscan : {raw}')
+        # try:
+        #     value = target_type(raw) if raw else default
+        # except ValueError as exc:
+        #     # value = target_type(default)
+        #     value = default
+        #     #                                                                                            ADD A STATUS MESSAGE HERE
+        # print(f'parsed output : {value}')
+        # return value
+
+
+    def _parseLineEditValue(self, field: QLineEdit, default, target_type):
+        '''
+        ADD RANGE LIMIT
+        '''
+        raw = field.text().strip()
+        print(f'raw read dbscan : {raw}')
+        if not raw:
+            value = default
+        else:
+            try:
+                value = target_type(raw)
+            except ValueError:
+                if target_type is int:
+                    try:
+                        value = int(float(raw))
+                    except ValueError:
+                        value = default
+                        # ADD A STATUS MESSAGE HERE
+                else:
+                    value = default
+                    # ADD A STATUS MESSAGE HERE
+        print(f'parsed output : {value}')
+        return value
+
+
+
+
+
+
+
+
+
+
 # FEATURES
 
     def _createStatusBar(self, message = "STATUS"):
@@ -132,14 +221,47 @@ class WindowManager:
 
     # TOOL BARS
 
-    def _createRunButton(self, analysisType: str):
+    # def _createRunButton(self, analysisType: str, analysisParams: dict):
+    # def _createRunButton(self, analysisType: str, fields: dict):
+    #     '''
+    #     analysisParams {"analysisType": str, "analysisParams": dict}
+    #     '''
+    #     runButton = QPushButton("Run")
+
+    #     analysisParams = {}
+    #     for param, (field, default) in fields.items():
+    #         analysisParams[param] = self._parseLineEditFloat(field, default)
+
+    #     toPass = {
+    #     'analysisType': analysisType,
+    #     'analysisParams': analysisParams
+    #     }
+    #     runButton.clicked.connect(lambda _checked=False, kind=toPass: self.appManager._runAnalysis(kind))
+
+    #     return runButton
+
+
+    def _createRunButton(self, analysisType: str, fields: dict):
         '''
+        analysisParams {"analysisType": str, "analysisParams": dict}
         '''
         runButton = QPushButton("Run")
-        # runButton.clicked.connect(self.appManager._runAnalysis(analysisType))
-        runButton.clicked.connect(lambda _checked=False, kind=analysisType: self.appManager._runAnalysis(kind))
 
+        def onClicked(_checked=False):
+            analysisParams = {
+                # param: self._parseLineEditFloat(field, default, type)
+                param: self._parseLineEditValue(field, default, type)
+                for param, (field, default, type) in fields.items()
+            }
+            toPass = {
+                "analysisType": analysisType,
+                "analysisParams": analysisParams,
+            }
+            self.appManager._runAnalysis(toPass)
+
+        runButton.clicked.connect(onClicked)
         return runButton
+
 
     def _createPlotButton(self, analysisType: str):
         '''
@@ -169,13 +291,14 @@ class WindowManager:
         plotButton = self._createPlotButton("loc")
 
         # CONTROLS
-        heightSlider =  QSlider(Qt.Orientation.Horizontal)
+        # heightLabel = QLabel("")
+        # heightSlider =  QSlider(Qt.Orientation.Horizontal)
         # aspectSlider
         # sizeSlider
 
         # add widgets to the toolbar
         toolBar.addWidget(title)
-        toolBar.addWidget(heightSlider)
+        # toolBar.addWidget(heightSlider)
         toolBar.addWidget(plotButton)
 
         self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
@@ -190,14 +313,17 @@ class WindowManager:
         title = QLabel("Nearest Neighbors")
 
         # PLOT
+        runParams = {}
+        runButton = self._createRunButton("nn", runParams)
         plotButton = self._createPlotButton("nn")
 
         # CONTROLS
-        somethingSlider = QSlider(Qt.Orientation.Horizontal)
+        # somethingSlider = QSlider(Qt.Orientation.Horizontal)
 
         # add widgets to the toolbar
         toolBar.addWidget(title)
-        toolBar.addWidget(somethingSlider)
+        # toolBar.addWidget(somethingSlider)
+        toolBar.addWidget(runButton)
         toolBar.addWidget(plotButton)
 
         self.appManager.addToolBar(Qt.ToolBarArea.RightToolBarArea, toolBar)
@@ -227,8 +353,14 @@ class WindowManager:
         minPTSField.setStatusTip("Minimum Points")
         minPTSLabel.setBuddy(minPTSField)
 
-        # RUN / PLOT
-        runButton = self._createRunButton("dbscan")
+        # param, (field, default)
+
+        runParams = {
+            'eps' : (epsilonField, 0.5, float),
+            'min_pts' : (minPTSField, 2, int)
+        }
+
+        runButton = self._createRunButton("dbscan", runParams)
         plotButton = self._createPlotButton("dbscan")
         
         # add widgets to the toolbar
@@ -275,8 +407,14 @@ class WindowManager:
         radiusDensityField.setStatusTip("Radius array density for Ripley K-Function Analysis")
         radiusDensityLabel.setBuddy(radiusDensityField)
 
+        runParams = {
+            'low' : (radiusLowBoundField, 0.01, float),
+            'high' : (radiusHighBoundField, 100, float),
+            'density' : (radiusDensityField, 1000, int)
+        }
+
         # RUN / PLOT
-        runButton = self._createRunButton("ripley")
+        runButton = self._createRunButton("ripley", runParams)
         plotButton = self._createPlotButton("ripley")
 
         # add widgets to the toolbar
@@ -326,8 +464,14 @@ class WindowManager:
         evalSFField.setStatusTip("Evaluation grid multiplicative factor")
         evalSFLabel.setBuddy(evalSFField)
 
+        runParams = {
+            'bandwidth' : (bandwidthField, 0.1, float),
+            'eval_buff' : (evalBuffField, 5, int),
+            'eval_sf' : (evalSFField, 10.0, float)
+        }
+
         # RUN / PLOT
-        runButton = self._createRunButton("kde")
+        runButton = self._createRunButton("kde", runParams)
         plotButton = self._createPlotButton("kde")
 
         # add widgets to the toolbar

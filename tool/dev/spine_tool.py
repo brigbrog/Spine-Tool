@@ -61,8 +61,6 @@ class SpineTool(QMainWindow):
 		self.dataManager = DataManager(self)
 
 
-
-
 # ACTIONS :
 # ------------------------------------------------------------------------------------------------
 
@@ -72,19 +70,57 @@ class SpineTool(QMainWindow):
 		'''
 		return
 
-	def _runAnalysis(self, analysisType):
+
+
+
+	# def _parseLineEditFloat(self, field: QLineEdit, default: float):
+	# 	raw = field.text().strip()
+
+	# 	try: 
+	# 		flt = float(raw) if raw else default
+	# 	except ValueError as exc:
+	# 		raise ValueError("Field entry cannot be converted to valid float") from exc
+
+	# 	return flt
+
+
+
+
+
+
+	# def _runAnalysis(self, analysisType):
+	# 	'''
+	# 	'''
+	# 	if self.dataManager.data is None:
+	# 		self.statusBar().showMessage("LOAD DATA BEFORE RUNNING ANALYSIS")
+	# 		return
+
+	# 	self.dataManager._runAnalysis(analysisType)
+
+
+	def _runAnalysis(self, analysisParams):
 		'''
+		analysisParams {"analysisType": str, "analysisParams": dict}
 		'''
-		print(f'running {analysisType}...')
-		self.dataManager._runAnalysis(analysisType)
+		if self.dataManager.data is None:
+			self.statusBar().showMessage("LOAD DATA BEFORE RUNNING ANALYSIS")
+			return
+
+		self.dataManager._runAnalysis(**analysisParams)
+
 
 	def _plotAnalysis(self, analysisType):
 		'''
 		'''
-		print(f'plotting {analysisType}...')
+		if self.dataManager.data is None:
+			self.statusBar().showMessage("LOAD DATA BEFORE PLOTTING ANALYSIS")
+			return
+
 		plotArr = self.dataManager._plotAnalysis(analysisType)
-		print(plotArr.shape)
-		self._loadPlotArr(plotArr)
+		if plotArr is None:
+			self.statusBar().showMessage("RUN ANALYSIS BEFORE PLOTTING")
+		else:
+			self._loadPlotArr(plotArr)
 
 
 	def _clearViewPort(self):
@@ -92,27 +128,18 @@ class SpineTool(QMainWindow):
 		if scene is not None:
 			scene.clear()
 
+
 	def _loadPlotArr(self, plotArr):
 		self._clearViewPort()
 
 		vp = self.graphicsView.viewport()
-		dpr = vp.devicePixelRatioF()  # e.g., 1.0 on standard displays, 2.0 on Retina/HiDPI
-		# vp_w = max(1, int(round(vp.width() * dpr)))
-		# vp_h = max(1, int(round(vp.height() * dpr)))
-
-		# print(f"width: {vp_w} (dpr={dpr})")
-		# print(f"height: {vp_h} (dpr={dpr})")
-
-		# # Generate RGBA uint8 directly (0..255) with opaque alpha channel
-		# test_cimg = np.random.randint(0, 256, size=(vp_h, vp_w, 3), dtype=np.uint8)
-		# test_aimg = np.full((vp_h, vp_w, 1), 255, dtype=np.uint8)
-		# test_img = np.concatenate([test_cimg, test_aimg], axis=2)
-
+		dpr = vp.devicePixelRatioF()
 		test_qimg = self.dataManager._ndarray2QImage(plotArr)
 		test_qimg.setDevicePixelRatio(dpr)
 
 		pixmap = QPixmap.fromImage(test_qimg)
 		self._reloadCanvas(pixmap)
+
 
 	def _loadTestImage(self):
 		self._clearViewPort()
